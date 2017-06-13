@@ -1,0 +1,103 @@
+@CHARSET "UTF-8";
+
+/* style reset */
+* {-webkit-text-size-adjust:none; -webkit-overflow-scrolling:touch}
+* {margin:0; padding:0}
+html {width:100%; height:100%; }
+body {width:100%; height:100%;  font-family:Dotum, Helvetica,sans-serif; font-size:12px; color:#555;  }
+form, input, select, textarea, button {font-size:12px; color:#555}
+ul, ol, li{list-style:none}
+a {cursor:pointer; color:#666; text-decoration:none}
+a:hover,a:active,a:focus{text-decoration:none}
+em, address {font-style:normal}
+caption {display:none; font-size:0}
+hr {display:none}
+button {cursor:pointer; border:0}
+img {border:0}
+input.txt {height:17px; padding:3px 0 0 3px;}  
+input.txt:focus {border:0; outline:0}
+input.value_txt:focus {border:0; outline:0}
+input.file {height:17px; padding:3px 0 0 3px} 
+input.radio {vertical-align:middle}  
+input.checkbox {vertical-align:middle}
+fieldset {margin:0; padding:0; border:0; background:0}
+fieldset legend {visibility:hidden; font-size:0; line-height:0}
+.hide {position:absolute; left:0; top:0; visibility:hidden; font-size:0; line-height:0}
+.ind {text-indent:-99999px}
+
+
+.midarea {position:relative; width:100%; min-height:100%; margin:0; background:#fff !important; }
+.midarea.login{display: table; width:auto; padding:20px 20px;}
+.midarea article {display: table-cell; vertical-align: middle; width:100%; padding:20px 0 0 0; overflow:hidden; }
+
+.boardtab .midarea article {padding-top:100px}
+.boardtab2 .midarea article {padding-top:155px}
+
+
+/* button */
+.btncenter {clear:both; width:100%; padding:0; text-align:center; font-size:0}
+.btnset {position:fixed !important; left:0; bottom:0; width:100%; z-index: 100; overflow-y:visible !important; text-align:center;}
+
+
+
+
+dl.boardview {overflow:hidden; padding-top:2px; border-bottom:1px solid #c8c8c8; word-spacing:-1px; } /* 2013.09.13 modify */
+dl.boardview dt {padding:10px 0 11px 12px; background:#f5f5f5; border-bottom:1px solid #c8c8c8; font-weight:bold; font-size:18px; line-height:22px; color:#3c3c3c}
+dl.boardview dt * {vertical-align:middle}
+dl.boardview dt span {display:block; padding:3px 0 0 0; font-size:14px; color:#999; line-height:16px; font-weight:bold}
+dl.boardview dt em {margin-right:3px; vertical-align:1px; color:#99cc33}
+dl.boardview dd {padding:10px 12px 8px 12px; text-align:justify; background:#ededed; color:#4c4c4c; letter-spacing:-1px; font-size:15px; line-height:22px} 
+dl.boardview dd span {display:block; padding:0; font-size:14px; color:#999; font-weight:bold}
+dl.boardview dd em {display:block; color:#99cc33; font-weight:bold}
+dl.boardview dd p {padding:0 0 9px 0; overflow:hidden; line-height:18px}
+
+
+
+.tcloudloginTOI {/*width:95% !important;*/ padding:0 !important; }
+.tcloudloginTOI dl {/*position:relative; width:auto; padding:0 105px 0 0; margin:0 auto 15px*/}
+.tcloudloginTOI dl dt {/*height:60px; margin-right:-105px;*/ padding:0 29px; text-align:center; color:#c3c8d3; font-size:14px; line-height:1.5}
+.tcloudloginTOI dl dt.style2{margin-top:8px; padding:0}
+.tcloudloginTOI dl dt.bottom.style2{/*position:absolute; bottom:45px; left:0; width:100%;*/ margin-top:123px; margin-bottom:45px}
+.tcloudloginTOI dl dt.bottom.style2 .btn-wrap{/*padding:0 50px*/}
+.tcloudloginTOI dl dd {width: 100%;}
+.tcloudloginTOI dl dd.inp_id {/*width:auto; padding:0 0 0 10px*/margin-top:5px;}
+.tcloudloginTOI dl dd.inp_pw {/*width:auto; padding:7px 0 0 10px*/margin-top:7px; }
+.tcloudloginTOI dl dd input.txt {width:100%; height:40px; padding:0 12px; /*background:#fff;*/ border:1px solid #c7cbd6; border-radius:5px; font-size:17px; color:#ced2db; box-sizing:border-box}
+.tcloudloginTOI dl dd input.txt::-webkit-input-placeholder{color:#ced2db}
+.tcloudloginTOI dl dd input.txt::-moz-placeholder{color:#ced2db}
+.tcloudloginTOI dl dd button.btn_login {/*position:absolute; right:10px; top:60px*/}
+.tcloudloginTOI dl dd button.btn_login {width:100%; height:50px; background:#ced2db; border-radius:5px; color:#fff; font-size:17px; /*font-weight:bold*/}
+.tcloudloginTOI dl dd button.btn_login.non-active{pointer-events: none; cursor: default;}
+.tcloudloginTOI dl dd button.btn_login.active{background-color: #99cc33; outline: none;}
+
+.tcloudloginTOI dl dd.sch {/*clear:both; padding:15px 0 0 15px*/ text-align:center}
+
+.tcloudloginTOI dd.agreechk {text-align:center;}
+
+.tcloudloginTOI dl dd.sch a {margin:0 17px 0 0; color:#99cc33; font-size:12px; text-decoration:underline}
+.tcloudloginTOI dl dd.sch a:last-child{margin:0}
+.tcloudloginTOI .btnset_tcloud {position:fixed !important; left:0; bottom:0; width:100%; height:53px !important; padding-top:0; overflow-y:visible !important; text-align:center;}
+.tcloudloginTOI dl dt button.btnRegister{width:100%; height:50px; background:#ced2db; border:1px solid #c8cbd4; border-radius:5px; color:#fff; font-size:17px; /*font-weight:bold; margin-top:10px*/}
+.tcloudloginTOI dl dt button.btnRegister.style2{border:1px solid #c7cbd6; background-color:#fff; color:#292930}
+
+
+
+
+.boardtab header {height:auto} 
+.boardtab header h2.page-tit {height:35px; background-color:#EDA0C7; border-bottom:1px solid #EDA0C7}
+.boardtab .midarea article {padding-top:100px}
+.boardtab ul.tabbox {margin:0}
+.boardtab2 header {height:auto}
+.boardtab2 header h2.page-tit {height:35px; background-color:#EDA0C7; border-bottom:1px solid #EDA0C7}
+.boardtab2 header h3 {position:relative; padding:13px 0 13px 12px; background:#f5f5f5; border-bottom:1px solid #dcdcdc; font-size:18px; font-weight:normal; letter-spacing:-1px; color:#6d6f74}
+.boardtab2 header h3 button.btn_write {position:absolute; right:3px; top:7px}
+.boardtab2 header .tabopt {background:#ffffff; border-bottom:1px solid #dcdcdc}
+.boardtab2 .midarea article {padding-top:155px}
+.boardtab2 ul.tabbox {margin:0}
+
+
+
+
+
+
+

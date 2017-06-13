@@ -1,0 +1,8 @@
+sessioncheck.time = 2
+
+############################
+# send email
+############################
+email.auth.host=http://localhost:8080/openapi/member/emailAuth?emailAuthKey=
+email.auth.subject=\uC774\uBA54\uC77C \uC778\uC99D \uBA54\uC77C\uC785\uB2C8\uB2E4.
+email.auth.contents=\uC774\uBA54\uC77C \uC778\uC99D\uC744 \uC704\uD574 \uC544\uB798 \uB9C1\uD06C\uB97C \uB20C\uB7EC \uC8FC\uC138\uC694.

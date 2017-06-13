@@ -1,0 +1,50 @@
+package com.wt.openapi.member.service;
+
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.wt.openapi.common.model.ResultCode;
+import com.wt.openapi.common.model.ResultMaster;
+import com.wt.openapi.member.dao.MemberDao;
+import com.wt.openapi.member.model.Member;
+import com.wt.openapi.member.model.MemberList;
+import com.wt.openapi.utils.CodeMessage;
+
+
+@Service
+public class MemberServiceImpl implements MemberService{
+	
+	Log logger = LogFactory.getLog(getClass());
+	
+	@Autowired
+ 	private MemberDao memberDao;
+ 
+    @Override
+    public List<Member> getMemberList() {
+        return memberDao.getMemberList();
+    }
+    
+    @Override
+    public ResultMaster getMemberListJson() {
+    	ResultMaster rm = new ResultMaster();
+		ResultCode resultCode = new ResultCode();
+		MemberList data = new MemberList();
+		
+		try {
+			data.setMember(memberDao.getMemberList());
+			CodeMessage.setResultCode(resultCode, CodeMessage.RESPONSE_CODE_OK);
+		} catch (Exception e) {
+			logger.error(CodeMessage.getResultMsg(CodeMessage.RESPONSE_CODE_SERVICE_ERROR),e);
+			CodeMessage.setResultCode(resultCode,CodeMessage.RESPONSE_CODE_SERVICE_ERROR);
+		}
+		
+		rm.setResult(resultCode);
+		rm.setBody(data);
+		
+    	return rm;
+    }
+}

@@ -1,0 +1,190 @@
+package com.wt.openapi.member.service;
+
+import java.util.HashMap;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.wt.openapi.common.configuration.ConfigProperties;
+import com.wt.openapi.common.model.RequestCustomHeaderInfo;
+import com.wt.openapi.common.model.ResultCode;
+import com.wt.openapi.common.model.ResultMaster;
+import com.wt.openapi.common.session.SessionCheckInfoByDB;
+import com.wt.openapi.member.dao.MemberDao;
+import com.wt.openapi.member.model.info.EmailAuthInfo;
+import com.wt.openapi.member.model.info.JoinMemberInfo;
+import com.wt.openapi.member.model.info.LoginMemberInfo;
+import com.wt.openapi.member.model.vo.MemberInfo;
+import com.wt.openapi.member.model.vo.MemberPwdInfo;
+import com.wt.openapi.utils.CodeMessage;
+import com.wt.openapi.utils.EncryptionUtils;
+import com.wt.openapi.utils.SendEmailUtils;
+
+
+@Service
+public class MemberServiceImpl implements MemberService{
+	
+	Log logger = LogFactory.getLog(getClass());
+	
+	EncryptionUtils encryptionUtils = new EncryptionUtils();
+	SendEmailUtils sendEmailUtils = new SendEmailUtils();
+	
+	@Autowired
+ 	private MemberDao memberDao;
+	
+	@Autowired
+	SessionCheckInfoByDB sessionCheckInfo;
+ 
+    /*
+	 * 회원가입
+	 * 가입 시 memId(이메일)로 이메일 인증 메일 발송
+	 * 비밀번호 생성규칙 : 임의의 saltKey(난수를 생성하여 md5로 16진수 암호화) + 비밀번호(영문+숫자+특수문자 합하여 8자리 이상) 두개를 합하여 sha256으로 암호화
+	 * 이메일 인증키 생성규칙 : emailAuthKey(기본 스트링) + 회원ID + 현재 시간 sha256암호화
+	 * 만료시간은 1시간
+	 */
+	@Override
+	public ResultMaster joinMember(JoinMemberInfo joinMemberInfo) {
+		ResultMaster rm = new ResultMaster();
+		ResultCode resultCode = new ResultCode();
+		
+		try {
+			MemberInfo memberInfo = new MemberInfo();
+			// 이메일 인증키 생성
+			String emailAuthKey = encryptionUtils.getSHA256Digest("emailAuthKey"+joinMemberInfo.getUserId()+System.currentTimeMillis());
+			
+			memberInfo.setMemStatus("1");
+			memberInfo.setMemType("1");
+			memberInfo.setMemSex(joinMemberInfo.getSex());
+			memberInfo.setMemName(joinMemberInfo.getName());
+			memberInfo.setMemPhone(joinMemberInfo.getPhone());
+			memberInfo.setMemNickName(joinMemberInfo.getNickName());
+			memberInfo.setMemEmail(joinMemberInfo.getUserId());
+			memberInfo.setMemEmailStatus("0");
+			memberInfo.setMemEmailKey(emailAuthKey);
+			
+			// 회원정보 생성
+			if(memberDao.joinMember(memberInfo) > 0) {
+				// 비밀번호 생성
+				HashMap<String, String> encryption = encryptionUtils.encryption(joinMemberInfo.getPassword());
+				
+				MemberPwdInfo memberPwdInfo = new MemberPwdInfo();
+				memberPwdInfo.setMemNo(memberInfo.getMemNo());
+				memberPwdInfo.setMemSalt(encryption.get("saltKey"));
+				memberPwdInfo.setMemPassword(encryption.get("encryptionStr"));
+
+				if(memberDao.insertPwd(memberPwdInfo) > 0) {
+					// 이메일 인증 메일 발송
+					sendEmailUtils.SendEmailAuth(emailAuthKey, joinMemberInfo.getUserId(), memberInfo.getMemNo());
+					CodeMessage.setResultCode(resultCode, CodeMessage.RESPONSE_CODE_OK);
+				}
+			}
+		} catch (Exception e) {
+			logger.error(CodeMessage.getResultMsg(CodeMessage.RESPONSE_CODE_MEMBER_JOIN_FAIL),e);
+			CodeMessage.setResultCode(resultCode,CodeMessage.RESPONSE_CODE_MEMBER_JOIN_FAIL);
+		}
+		
+		rm.setResult(resultCode);
+		
+    	return rm;
+	}
+
+	/*
+	 * 로그인
+	 * 인증 완료된 회원 로그인
+	 * 세션 정보 생성
+	 * 비밀번호 검증 절차 : 회원의 고유 saltKey조회 + 전달받은 비밀번호를 sha256으로 암호화하여 비밀번호 비교
+	 */
+	@Override
+	public ResultMaster loginMember(LoginMemberInfo loginMemberInfo, RequestCustomHeaderInfo requestNotLoginHeaderInfo, HttpServletResponse response) {
+		ResultMaster rm = new ResultMaster();
+		ResultCode resultCode = new ResultCode();
+		
+		try {
+			HashMap<String, Object> param = new HashMap<String, Object>();
+			param.put("memEmail", loginMemberInfo.getUserId());
+			MemberInfo resultMember = memberDao.selectMember(param);
+			
+			if(resultMember != null) {
+				requestNotLoginHeaderInfo.setMemNo(resultMember.getMemNo());
+				
+				// 미인증 회원의 경우 세션정보에 memNo만 전달
+				if(resultMember.getMemStatus().equals(CodeMessage.USER_STATUS_NOT_AUTH)) {
+					CodeMessage.setResultCode(resultCode, CodeMessage.RESPONSE_CODE_MEMBER_NOT_AUTH);
+				} else {
+					// 비밀번호 검증
+					MemberPwdInfo memberPwdInfo = memberDao.selectPwd(resultMember.getMemNo());
+					String resultPwd = encryptionUtils.getSHA256Digest(memberPwdInfo.getMemSalt()+loginMemberInfo.getPassword());
+					
+					if(memberPwdInfo.getMemPassword().equals(resultPwd)) {						
+						// 세션 정보 생성
+						requestNotLoginHeaderInfo = sessionCheckInfo.makeSessionId(resultMember, requestNotLoginHeaderInfo);
+						CodeMessage.setResultCode(resultCode, CodeMessage.RESPONSE_CODE_OK);
+						
+						response.setHeader("session-id", requestNotLoginHeaderInfo.getSessionid());
+						response.setHeader("user-id", requestNotLoginHeaderInfo.getUserId());
+						response.setHeader("poc-id", requestNotLoginHeaderInfo.getPocId());
+					} else {
+						CodeMessage.setResultCode(resultCode, CodeMessage.RESPONSE_CODE_MEMBER_SEARCH_FAIL);
+					}
+				}
+			} else {
+				CodeMessage.setResultCode(resultCode, CodeMessage.RESPONSE_CODE_MEMBER_SEARCH_FAIL);
+			}
+		} catch (Exception e) {
+			logger.error(CodeMessage.getResultMsg(CodeMessage.RESPONSE_CODE_MEMBER_LOGIN_FAIL),e);
+			CodeMessage.setResultCode(resultCode,CodeMessage.RESPONSE_CODE_MEMBER_LOGIN_FAIL);
+		}
+		
+		rm.setResult(resultCode);
+		
+    	return rm;
+	}
+
+	@Override
+	public ResultMaster logoutMember(RequestCustomHeaderInfo requestLoginHeaderInfo) {
+		ResultMaster rm = new ResultMaster();
+		ResultCode resultCode = new ResultCode();
+		
+		try {
+			// 세션 삭제
+			if(sessionCheckInfo.deleteSessionId(requestLoginHeaderInfo.getSessionid()) > 0) {
+				CodeMessage.setResultCode(resultCode, CodeMessage.RESPONSE_CODE_OK);
+			} else {
+				CodeMessage.setResultCode(resultCode, CodeMessage.RESPONSE_CODE_SESSION_DELETE_FAIL);
+			}
+		} catch (Exception e) {
+			logger.error(CodeMessage.getResultMsg(CodeMessage.RESPONSE_CODE_SESSION_DELETE_FAIL),e);
+			CodeMessage.setResultCode(resultCode,CodeMessage.RESPONSE_CODE_SESSION_DELETE_FAIL);
+		}
+		
+		rm.setResult(resultCode);
+		
+    	return rm;
+	}
+
+	@Override
+	public ResultMaster emailAuth(EmailAuthInfo emailAuthInfo) {
+		ResultMaster rm = new ResultMaster();
+		ResultCode resultCode = new ResultCode();
+		
+		try {
+			// 회원정보 업데이트
+			if(memberDao.updateEmailAuth(emailAuthInfo) > 0) {
+				CodeMessage.setResultCode(resultCode, CodeMessage.RESPONSE_CODE_OK);
+			} else {
+				CodeMessage.setResultCode(resultCode,CodeMessage.RESPONSE_CODE_EMAIL_AUTH_FAIL);
+			}
+		} catch (Exception e) {
+			logger.error(CodeMessage.getResultMsg(CodeMessage.RESPONSE_CODE_EMAIL_AUTH_FAIL),e);
+			CodeMessage.setResultCode(resultCode,CodeMessage.RESPONSE_CODE_EMAIL_AUTH_FAIL);
+		}
+
+		rm.setResult(resultCode);
+		
+    	return rm;
+	}
+}

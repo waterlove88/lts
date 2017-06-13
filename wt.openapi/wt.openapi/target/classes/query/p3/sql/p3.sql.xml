@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wt.p3">
+	<insert id="insertSleep" parameterType="map">
+		INSERT
+		INTO
+			WT_P3_SLEEP
+			(
+				MEM_NO,
+				SLEEP_PLATFORM,
+				SLEEP_MODEL,
+				SLEEP_SLEEPEFFICIENCY,
+				SLEEP_DURATION,
+				SLEEP_RESPIRATION,
+				CREATE_DATE
+			)
+		VALUES
+			(
+				#{memNo},
+				#{platform},
+				#{model},
+				#{sleepefficiency},
+				#{duration},
+				#{respiration},
+				NOW()
+			)
+	</insert>
+	
+	<select id="selectSleepCount" parameterType="map" resultType="int">
+		SELECT
+			COUNT(*)
+		FROM
+			WT_P3_SLEEP
+		WHERE
+			MEM_NO = #{memNo}
+	</select>
+	
+	<select id="selectSleep" parameterType="map" resultType="com.wt.openapi.p3.model.SleepVo">
+		SELECT
+			SLEEP_NO sleepNo,
+			MEM_NO memNo,
+			SLEEP_PLATFORM platform,
+			SLEEP_MODEL model, 
+			SLEEP_SLEEPEFFICIENCY sleepefficiency,
+			SLEEP_DURATION duration,
+			SLEEP_RESPIRATION respiration,
+			CREATE_DATE createDate,
+			MODIFY_DATE modifyDate
+		FROM
+			WT_P3_SLEEP
+		WHERE
+			MEM_NO = #{memNo}
+	</select>
+	
+	<update id="updateSleep" parameterType="map">
+		UPDATE
+			WT_P3_SLEEP
+		SET
+			MODIFY_DATE = NOW()
+			<if test='platform != "" and platform != null'>
+			,SLEEP_PLATFORM = #{platform}
+			</if>
+			<if test='model != "" and model != null'>
+			,SLEEP_MODEL = #{model}
+			</if>
+			<if test='sleepefficiency != "" and sleepefficiency != null'>
+			,SLEEP_SLEEPEFFICIENCY = #{sleepefficiency}
+			</if>
+			<if test='duration != "" and duration != null'>
+			,SLEEP_DURATION = #{duration}
+			</if>
+			<if test='respiration != "" and respiration != null'>
+			,SLEEP_RESPIRATION = #{respiration}
+			</if>
+		WHERE
+			MEM_NO = #{memNo}
+			AND SLEEP_NO = #{sleepNo}
+	</update>
+	
+	<delete id="deleteSleep" parameterType="map">
+		DELETE
+			FROM WT_P3_SLEEP
+		WHERE MEM_NO = #{memNo}
+		<if test='sleepNo != "-1"'>
+			AND SLEEP_NO = #{sleepNo}
+		</if>
+	</delete>
+</mapper>

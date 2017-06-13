@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="wt.member">
+
+    <select id="getMemberList" resultType="com.wt.openapi.member.model.Member">
+        SELECT
+            id,
+            name
+        FROM
+            TEST
+    </select>
+    
+    <select id="selectUserInfoBySession" parameterType="String" resultType="com.wt.openapi.common.model.RequestCustomHeaderInfo">
+        SELECT
+            SESSION_ID sessionid,
+            MEM_NO memNo, 
+            POC_ID pocId,		
+            USER_IP userIp, 	
+            USER_AGENT userAgent,  
+            USER_MDN userMdn, 	
+            USER_HSMODEL userHsmodel
+        FROM
+            WT_MEM_SESSION
+        WHERE
+            SESSION_ID = #{sessionId}
+            AND EXPIRED_DATE >= sysdate()
+    </select>
+    
+    <insert id="joinMember" parameterType="com.wt.openapi.member.model.vo.MemberInfo" useGeneratedKeys="true" keyProperty="memNo" keyColumn="MEM_NO">
+		INSERT INTO
+			WT_MEMBER(
+				MEM_STATUS,
+				MEM_TYPE,
+				MEM_SEX,
+				MEM_NAME,
+				MEM_PHONE,
+				MEM_EMAIL,
+				MEM_NICKNAME,
+				MEM_EMAIL_STATUS,
+				MEM_EMAIL_KEY,
+				CREATE_DATE,
+				MEM_BIRTH,
+				MEM_WEIGHT,
+				MEM_HEIGHT) 
+		VALUES(
+			#{memStatus},
+			#{memType},
+			#{memSex},
+			#{memName},
+			#{memPhone},
+			#{memEmail},
+			#{memNickName},
+			#{memEmailStatus},
+			#{memEmailKey},
+			SYSDATE(),
+			#{memBirth},
+			#{memWeight},
+			#{memHeight})
+    </insert>
+    
+    <insert id="insertPwd" parameterType="com.wt.openapi.member.model.vo.MemberPwdInfo">
+		INSERT INTO
+			WT_PASSWORD(
+				MEM_NO,
+				MEM_PASSWORD,
+				MEM_SALTKEY,
+				CREATE_DATE) 
+		VALUES(
+			#{memNo},
+			#{memPassword},
+			#{memSalt},
+			SYSDATE())
+    </insert>
+    
+    <select id="selectMember" parameterType="hashmap" resultType="com.wt.openapi.member.model.vo.MemberInfo">
+        SELECT
+            MEM_NO as memNo,
+			MEM_STATUS as memStatus,
+			MEM_TYPE as memType,
+			MEM_SEX as memSex,
+			MEM_NAME as memName,
+			MEM_PHONE as memPhone,
+			MEM_EMAIL as memEmail,
+			MEM_NICKNAME as memNickName,
+			MEM_BIRTH as memBirth,
+			MEM_WEIGHT as memWeight,
+			MEM_HEIGHT as memHeight,
+			MEM_EMAIL_STATUS as memEmailStatus,
+			MEM_EMAIL_KEY as memEmailKey,
+			CREATE_DATE as createDate,
+			MODIFY_DATE as modifyDate
+        FROM
+            WT_MEMBER
+		WHERE
+		<if test="memEmail != null">
+			MEM_EMAIL = #{memEmail}
+		</if>
+		<if test="memNo != null">
+			MEM_NO = #{memNo}
+		</if>
+    </select>
+    
+	<select id="selectPwd" parameterType="String" resultType="com.wt.openapi.member.model.vo.MemberPwdInfo">
+        SELECT
+			MEM_NO as memNo,
+			MEM_PASSWORD as memPassword,
+			MEM_SALTKEY as memSalt,
+			CREATE_DATE as createDate,
+			MODIFY_DATE as modifyDate			
+        FROM
+            WT_PASSWORD
+		WHERE
+			MEM_NO = #{memNo}
+    </select>
+    
+    <insert id="insertSessionId" parameterType="com.wt.openapi.common.model.RequestCustomHeaderInfo">
+		INSERT INTO
+			WT_MEM_SESSION(
+				MEM_NO,
+				SESSION_ID,
+				USER_IP,
+				USER_AGENT,
+				POC_ID,
+				USER_MDN,
+				USER_HSMODEL,
+				CREATE_DATE,
+				EXPIRED_DATE) 
+		VALUES(
+			#{memNo},
+			#{sessionid},
+			#{userIp},
+			#{userAgent},
+			#{pocId},
+			#{userMdn},
+			#{userHsmodel},
+			SYSDATE(),
+			ADDTIME(SYSDATE(),'3:00:00.0'))
+    </insert>
+    
+    <update id="updateEmailAuth" parameterType="com.wt.openapi.member.model.info.EmailAuthInfo">
+		UPDATE
+			WT_MEMBER
+		SET
+			MEM_STATUS = '0',
+			MEM_EMAIL_STATUS = '2',
+			MODIFY_DATE = SYSDATE()
+		WHERE
+			MEM_NO = #{memNo}
+			AND MEM_EMAIL_KEY = #{emailAuthKey}
+    </update>
+    
+    <delete id="deleteSessionId" parameterType="String">
+		DELETE FROM
+			WT_MEM_SESSION
+		WHERE
+			SESSION_ID = #{sessionId}
+    </delete>
+    
+    <select id="checkId" parameterType="String" resultType="int">
+    	SELECT
+    		COUNT(*)
+    	FROM
+    		WT_MEMBER
+    	WHERE
+    		MEM_EMAIL = #{uesrId}
+    </select>
+    
+    <update id="modifyPwd" parameterType="com.wt.openapi.member.model.vo.MemberPwdInfo">
+		UPDATE
+			WT_PASSWORD
+		SET
+			MEM_PASSWORD = #{memPassword},
+			MODIFY_DATE = SYSDATE(),
+			MEM_SALTKEY = #{memSalt}
+		WHERE
+			MEM_NO = #{memNo}
+    </update>
+    
+    <select id="checkNickName" parameterType="String" resultType="int">
+    	SELECT
+    		COUNT(*)
+    	FROM
+    		WT_MEMBER
+    	WHERE
+    		MEM_NICKNAME = #{userNickName}
+    </select>
+</mapper>

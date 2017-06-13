@@ -1,0 +1,11 @@
+package com.wt.openapi.member.service;
+
+import java.util.List;
+
+import com.wt.openapi.common.model.ResultMaster;
+import com.wt.openapi.member.model.Member;
+
+public interface MemberService {
+	List<Member> getMemberList();
+	ResultMaster getMemberListJson();
+}

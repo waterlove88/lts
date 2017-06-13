@@ -1,0 +1,105 @@
+package com.wt.openapi.common.session;
+
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.wt.openapi.common.configuration.ConfigProperties;
+import com.wt.openapi.common.dao.SessionDao;
+import com.wt.openapi.common.model.RequestCustomHeaderInfo;
+import com.wt.openapi.member.dao.MemberDao;
+
+@Service
+public class SessionCheckInfoByDB {
+	
+	protected Log logger = LogFactory.getLog(getClass());
+	
+	private int sessionTimeout;
+	
+	@Autowired
+	SessionDao sessionDao;
+	
+	@Autowired
+	MemberDao memberDao;
+	
+	public SessionCheckInfoByDB() {
+		sessionTimeout = Integer.parseInt(ConfigProperties.getProperty("sessioncheck.time")) * 60;
+	}
+
+	
+	public RequestCustomHeaderInfo getSessionCheckInfo(String sessionid) {
+		RequestCustomHeaderInfo requestCustomHeaderInfo = new RequestCustomHeaderInfo();
+		try {
+			requestCustomHeaderInfo = sessionDao.getUserInfoBySession(sessionid);
+			logger.debug(" *getSessionCheckInfo* " + requestCustomHeaderInfo.toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return requestCustomHeaderInfo;
+	}
+
+	
+//	public synchronized boolean deleteSessionCheckInfo(RequestCustomHeaderInfo requestCustomHeaderInfo) {
+//		boolean isSuccess = false;
+//		String key = ConfigProperties.getProperty("sessioncheck.prefix") + requestCustomHeaderInfo.getTcdSessionid();
+//		Jedis jedis = null;
+//
+//		try {
+//			jedis = sentinelJedisPool.getResource();
+//			long deleteCount = jedis.del(key);
+//			logger.debug("jedis.del(" + key + ") : " + deleteCount);
+//
+//			isSuccess = true; // Exception만 없다면 성공으로 간주
+//		} catch (JedisException e) {
+//			e.printStackTrace();
+//		} finally {
+//			if (jedis != null) {
+//				returnJedisResource(jedis);
+//			}
+//		}
+//
+//		return isSuccess;
+//	}
+
+
+//	public synchronized String getSessionKey(String key) {
+//		String value = null;
+//		key = ConfigProperties.getProperty("smsAuth.prefix") + key;
+//		Jedis jedis = null;
+//
+//		try {
+//			jedis = sentinelJedisPool.getResource();
+//			value = jedis.get(key);
+//		} catch (JedisException e) {
+//			e.printStackTrace();
+//		} finally {
+//			if (jedis != null) {
+//				returnJedisResource(jedis);
+//			}
+//		}
+//
+//		return value;
+//	}
+//
+//	public synchronized void putSessionKey(String key, CheckSmsAuthKeyInfo value) {
+//		key = ConfigProperties.getProperty("smsAuth.prefix") + key;
+//		Jedis jedis = null;
+//
+//		try {
+//			jedis = sentinelJedisPool.getResource();
+////			jedis.set(key, value.getValue());
+////			jedis.expire(key, StringUtils.isInt(ConfigProperties.getProperty("smsAuth.timeout.seconds")));
+//			jedis.setex(key, StringUtils.isInt(ConfigProperties.getProperty("smsAuth.timeout.seconds")), value.getValue());
+//		} catch (JedisException e) {
+//			e.printStackTrace();
+//		} finally {
+//			if (jedis != null) {
+//				returnJedisResource(jedis);
+//			}
+//		}
+//	}
+
+}
