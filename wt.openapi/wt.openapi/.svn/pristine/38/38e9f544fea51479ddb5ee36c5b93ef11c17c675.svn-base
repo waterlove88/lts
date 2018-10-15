@@ -1,9 +1,0 @@
-package com.wt.openapi.member.dao;
-
-import java.util.List;
-
-import com.wt.openapi.member.model.Member;
-
-public interface MemberDao {
-	List<Member> getMemberList();
-}
